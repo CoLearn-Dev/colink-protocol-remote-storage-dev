@@ -153,9 +153,120 @@ impl ProtocolEntry for ReadProvider {
     }
 }
 
+struct UpdateRequester;
+#[colink_sdk_p::async_trait]
+impl ProtocolEntry for UpdateRequester {
+    async fn start(
+        &self,
+        _cl: CoLink,
+        _param: Vec<u8>,
+        _participants: Vec<Participant>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+}
+
+struct UpdateProvider;
+#[colink_sdk_p::async_trait]
+impl ProtocolEntry for UpdateProvider {
+    async fn start(
+        &self,
+        cl: CoLink,
+        param: Vec<u8>,
+        participants: Vec<Participant>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let params: UpdateParams = prost::Message::decode(&*param)?;
+        let requester_uid = &participants[0].user_id;
+        // let remaining_quota = match cl
+        //     .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
+        //     .await
+        // {
+        //     Ok(data) => i32::from_le_bytes(<[u8; 4]>::try_from(data).unwrap()),
+        //     Err(_) => 64_i32,
+        // };
+        // let remaining_quota = remaining_quota - 1;
+        // cl.update_entry(
+        //     &format!("remote_storage:remaining_quota:{}", requester_uid),
+        //     &remaining_quota.to_le_bytes(),
+        // )
+        // .await?;
+        cl.update_entry(
+            &format!(
+                "remote_storage:{}:{}:{}",
+                if params.is_public {
+                    "public"
+                } else {
+                    "private"
+                },
+                requester_uid,
+                params.remote_key_name
+            ),
+            &params.payload,
+        )
+        .await?;
+        Ok(())
+    }
+}
+
+struct DeleteRequester;
+#[colink_sdk_p::async_trait]
+impl ProtocolEntry for DeleteRequester {
+    async fn start(
+        &self,
+        _cl: CoLink,
+        _param: Vec<u8>,
+        _participants: Vec<Participant>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+}
+
+struct DeleteProvider;
+#[colink_sdk_p::async_trait]
+impl ProtocolEntry for DeleteProvider {
+    async fn start(
+        &self,
+        cl: CoLink,
+        param: Vec<u8>,
+        participants: Vec<Participant>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let params: UpdateParams = prost::Message::decode(&*param)?;
+        let requester_uid = &participants[0].user_id;
+        // let remaining_quota = match cl
+        //     .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
+        //     .await
+        // {
+        //     Ok(data) => i32::from_le_bytes(<[u8; 4]>::try_from(data).unwrap()),
+        //     Err(_) => 64_i32,
+        // };
+        // let remaining_quota = remaining_quota - 1;
+        // cl.update_entry(
+        //     &format!("remote_storage:remaining_quota:{}", requester_uid),
+        //     &remaining_quota.to_le_bytes(),
+        // )
+        // .await?;
+        cl.delete_entry(&format!(
+            "remote_storage:{}:{}:{}",
+            if params.is_public {
+                "public"
+            } else {
+                "private"
+            },
+            requester_uid,
+            params.remote_key_name
+        ))
+        .await?;
+        Ok(())
+    }
+}
+
 colink_sdk_p::protocol_start!(
     ("remote_storage.create:requester", CreateRequester),
     ("remote_storage.create:provider", CreateProvider),
     ("remote_storage.read:requester", ReadRequester),
-    ("remote_storage.read:provider", ReadProvider)
+    ("remote_storage.read:provider", ReadProvider),
+    ("remote_storage.update:requester", UpdateRequester),
+    ("remote_storage.update:provider", UpdateProvider),
+    ("remote_storage.delete:requester", DeleteRequester),
+    ("remote_storage.delete:provider", DeleteProvider)
 );
