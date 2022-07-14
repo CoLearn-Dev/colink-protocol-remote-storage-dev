@@ -7,6 +7,39 @@ mod remote_storage_proto {
     include!(concat!(env!("OUT_DIR"), "/remote_storage.rs"));
 }
 
+async fn update_remaining_quota(
+    cl: &CoLink,
+    requester_uid: &str,
+    size: i64,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut remaining_quota = match cl
+        .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
+        .await
+    {
+        Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
+        Err(_) => -1,
+    };
+    if remaining_quota == -1 {
+        remaining_quota = match cl
+            .read_entry("remote_storage:default_remaining_quota")
+            .await
+        {
+            Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
+            Err(_) => 4194304_i64,
+        };
+    }
+    if remaining_quota < size {
+        Err("Do not have enough quota.")?
+    }
+    remaining_quota -= size;
+    cl.update_entry(
+        &format!("remote_storage:remaining_quota:{}", requester_uid),
+        &remaining_quota.to_le_bytes(),
+    )
+    .await?;
+    Ok(())
+}
+
 struct CreateRequester;
 #[colink_sdk_p::async_trait]
 impl ProtocolEntry for CreateRequester {
@@ -31,17 +64,10 @@ impl ProtocolEntry for CreateProvider {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let params: CreateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
-        let remaining_quota = match cl
-            .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
-            .await
-        {
-            Ok(data) => i32::from_le_bytes(<[u8; 4]>::try_from(data).unwrap()),
-            Err(_) => 64_i32,
-        };
-        let remaining_quota = remaining_quota - 1;
-        cl.update_entry(
-            &format!("remote_storage:remaining_quota:{}", requester_uid),
-            &remaining_quota.to_le_bytes(),
+        update_remaining_quota(
+            &cl,
+            requester_uid,
+            (params.remote_key_name.as_bytes().len() + params.payload.len()) as i64,
         )
         .await?;
         cl.create_entry(
@@ -98,19 +124,6 @@ impl ProtocolEntry for ReadProvider {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut params: ReadParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
-        // let remaining_quota = match cl
-        //     .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
-        //     .await
-        // {
-        //     Ok(data) => i32::from_le_bytes(<[u8; 4]>::try_from(data).unwrap()),
-        //     Err(_) => 64_i32,
-        // };
-        // let remaining_quota = remaining_quota - 1;
-        // cl.update_entry(
-        //     &format!("remote_storage:remaining_quota:{}", requester_uid),
-        //     &remaining_quota.to_le_bytes(),
-        // )
-        // .await?;
         if params.holder_id == String::default() {
             params.holder_id = requester_uid.clone();
         };
@@ -177,19 +190,12 @@ impl ProtocolEntry for UpdateProvider {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let params: UpdateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
-        // let remaining_quota = match cl
-        //     .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
-        //     .await
-        // {
-        //     Ok(data) => i32::from_le_bytes(<[u8; 4]>::try_from(data).unwrap()),
-        //     Err(_) => 64_i32,
-        // };
-        // let remaining_quota = remaining_quota - 1;
-        // cl.update_entry(
-        //     &format!("remote_storage:remaining_quota:{}", requester_uid),
-        //     &remaining_quota.to_le_bytes(),
-        // )
-        // .await?;
+        update_remaining_quota(
+            &cl,
+            requester_uid,
+            (params.remote_key_name.as_bytes().len() + params.payload.len()) as i64,
+        )
+        .await?;
         cl.update_entry(
             &format!(
                 "remote_storage:{}:{}:{}",
@@ -232,19 +238,6 @@ impl ProtocolEntry for DeleteProvider {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let params: UpdateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
-        // let remaining_quota = match cl
-        //     .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
-        //     .await
-        // {
-        //     Ok(data) => i32::from_le_bytes(<[u8; 4]>::try_from(data).unwrap()),
-        //     Err(_) => 64_i32,
-        // };
-        // let remaining_quota = remaining_quota - 1;
-        // cl.update_entry(
-        //     &format!("remote_storage:remaining_quota:{}", requester_uid),
-        //     &remaining_quota.to_le_bytes(),
-        // )
-        // .await?;
         cl.delete_entry(&format!(
             "remote_storage:{}:{}:{}",
             if params.is_public {
