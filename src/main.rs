@@ -11,30 +11,35 @@ async fn update_remaining_quota(
     cl: &CoLink,
     requester_uid: &str,
     size: i64,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     let remaining_quota_key = format!("remote_storage:remaining_quota:{}", requester_uid);
-    // TODO add lock and refactor
-    // let lock = cl.lock(&remaining_quota_key).await?;
+    let lock = cl.lock(&remaining_quota_key).await?;
     let mut remaining_quota = match cl.read_entry(&remaining_quota_key).await {
         Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
-        Err(_) => -1,
+        Err(_) => {
+            match cl
+                .read_entry("remote_storage:default_remaining_quota")
+                .await
+            {
+                Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
+                Err(_) => {
+                    cl.create_entry(
+                        "remote_storage:default_remaining_quota",
+                        &4194304_i64.to_le_bytes(),
+                    )
+                    .await?;
+                    4194304_i64
+                }
+            }
+        }
     };
-    if remaining_quota == -1 {
-        remaining_quota = match cl
-            .read_entry("remote_storage:default_remaining_quota")
-            .await
-        {
-            Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
-            Err(_) => 4194304_i64,
-        };
-    }
     if remaining_quota < size {
         Err("Do not have enough quota.")?
     }
     remaining_quota -= size;
     cl.update_entry(&remaining_quota_key, &remaining_quota.to_le_bytes())
         .await?;
-    // cl.unlock(lock).await?;
+    cl.unlock(lock).await?;
     Ok(())
 }
 
@@ -46,7 +51,7 @@ impl ProtocolEntry for CreateRequester {
         _cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         Ok(())
     }
 }
@@ -59,7 +64,7 @@ impl ProtocolEntry for CreateProvider {
         cl: CoLink,
         param: Vec<u8>,
         participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let params: CreateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
         update_remaining_quota(
@@ -94,7 +99,7 @@ impl ProtocolEntry for ReadRequester {
         cl: CoLink,
         _param: Vec<u8>,
         participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let provider_uid = &participants[1].user_id;
         let key = format!(
             "remote_storage:private:{}:variable_transfer:{}:output",
@@ -119,7 +124,7 @@ impl ProtocolEntry for ReadProvider {
         cl: CoLink,
         param: Vec<u8>,
         participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let mut params: ReadParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
         if params.holder_id == String::default() {
@@ -172,7 +177,7 @@ impl ProtocolEntry for UpdateRequester {
         _cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         Ok(())
     }
 }
@@ -185,7 +190,7 @@ impl ProtocolEntry for UpdateProvider {
         cl: CoLink,
         param: Vec<u8>,
         participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let params: UpdateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
         update_remaining_quota(
@@ -220,7 +225,7 @@ impl ProtocolEntry for DeleteRequester {
         _cl: CoLink,
         _param: Vec<u8>,
         _participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         Ok(())
     }
 }
@@ -233,7 +238,7 @@ impl ProtocolEntry for DeleteProvider {
         cl: CoLink,
         param: Vec<u8>,
         participants: Vec<Participant>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let params: UpdateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
         cl.delete_entry(&format!(

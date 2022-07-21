@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-colink-sdk-a = { tag = "v0.1.8", git = "ssh://git@github.com/CoLearn-Dev/colink-sdk-a-rust-dev.git" }
-colink-sdk-p = { tag = "v0.1.8", git = "ssh://git@github.com/CoLearn-Dev/colink-sdk-p-rust-dev.git" }
+colink-sdk-a = { tag = "v0.1.9", git = "ssh://git@github.com/CoLearn-Dev/colink-sdk-a-rust-dev.git" }
+colink-sdk-p = { tag = "v0.1.9", git = "ssh://git@github.com/CoLearn-Dev/colink-sdk-p-rust-dev.git" }
 prost = "0.10"
 regex = "1.5"
 tokio = "1.18"
