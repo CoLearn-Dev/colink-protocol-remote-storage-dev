@@ -12,10 +12,10 @@ async fn update_remaining_quota(
     requester_uid: &str,
     size: i64,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut remaining_quota = match cl
-        .read_entry(&format!("remote_storage:remaining_quota:{}", requester_uid))
-        .await
-    {
+    let remaining_quota_key = format!("remote_storage:remaining_quota:{}", requester_uid);
+    // TODO add lock and refactor
+    // let lock = cl.lock(&remaining_quota_key).await?;
+    let mut remaining_quota = match cl.read_entry(&remaining_quota_key).await {
         Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
         Err(_) => -1,
     };
@@ -32,11 +32,9 @@ async fn update_remaining_quota(
         Err("Do not have enough quota.")?
     }
     remaining_quota -= size;
-    cl.update_entry(
-        &format!("remote_storage:remaining_quota:{}", requester_uid),
-        &remaining_quota.to_le_bytes(),
-    )
-    .await?;
+    cl.update_entry(&remaining_quota_key, &remaining_quota.to_le_bytes())
+        .await?;
+    // cl.unlock(lock).await?;
     Ok(())
 }
 
@@ -146,11 +144,11 @@ impl ProtocolEntry for ReadProvider {
         let participants = vec![
             Participant {
                 user_id: cl.get_user_id()?,
-                ptype: "requester".to_string(),
+                role: "requester".to_string(),
             },
             Participant {
                 user_id: requester_uid.clone(),
-                ptype: "provider".to_string(),
+                role: "provider".to_string(),
             },
         ];
         let params = CreateParams {
