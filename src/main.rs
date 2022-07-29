@@ -163,7 +163,7 @@ impl ProtocolEntry for ReadProvider {
         };
         let mut payload = vec![];
         params.encode(&mut payload).unwrap();
-        cl.run_task("remote_storage.create", &payload, &participants, true)
+        cl.run_task("remote_storage.create", &payload, &participants, false)
             .await?;
         Ok(())
     }

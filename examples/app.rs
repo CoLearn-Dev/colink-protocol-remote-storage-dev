@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     };
     let mut payload = vec![];
     params.encode(&mut payload).unwrap();
-    cl.run_task("remote_storage.create", &payload, &participants, true)
+    cl.run_task("remote_storage.create", &payload, &participants, false)
         .await?;
 
     let clb = CoLink::new(addr, jwt_b);
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let mut payload = vec![];
     params.encode(&mut payload).unwrap();
     let task_id = cl
-        .run_task("remote_storage.read", &payload, &participants, true)
+        .run_task("remote_storage.read", &payload, &participants, false)
         .await?;
     let data = cl
         .read_or_wait(&format!("tasks:{}:output", task_id))
@@ -80,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     };
     let mut payload = vec![];
     params.encode(&mut payload).unwrap();
-    cl.run_task("remote_storage.update", &payload, &participants, true)
+    cl.run_task("remote_storage.update", &payload, &participants, false)
         .await?;
 
     let mut subscriber = clb.new_subscriber(&queue_name).await?;
@@ -99,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     };
     let mut payload = vec![];
     params.encode(&mut payload).unwrap();
-    cl.run_task("remote_storage.delete", &payload, &participants, true)
+    cl.run_task("remote_storage.delete", &payload, &participants, false)
         .await?;
 
     let data = subscriber.get_next().await?;
