@@ -102,7 +102,7 @@ impl ProtocolEntry for ReadRequester {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let provider_uid = &participants[1].user_id;
         let key = format!(
-            "_remote_storage:private:{}:variable_transfer:{}:output",
+            "_remote_storage:private:{}:_variable_transfer:{}:output",
             provider_uid,
             cl.get_task_id()?
         );
@@ -157,7 +157,7 @@ impl ProtocolEntry for ReadProvider {
             },
         ];
         let params = CreateParams {
-            remote_key_name: format!("variable_transfer:{}:output", cl.get_task_id()?),
+            remote_key_name: format!("_variable_transfer:{}:output", cl.get_task_id()?),
             payload,
             ..Default::default()
         };
