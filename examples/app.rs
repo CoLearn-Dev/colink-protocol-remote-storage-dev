@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let clb = CoLink::new(addr, jwt_b);
     let data = clb
         .read_or_wait(&format!(
-            "remote_storage:private:{}:remote_storage_demo",
+            "_remote_storage:private:{}:remote_storage_demo",
             user_id_a
         ))
         .await?;
@@ -68,7 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     // update
     let queue_name = clb
         .subscribe(
-            &format!("remote_storage:private:{}:remote_storage_demo", user_id_a),
+            &format!("_remote_storage:private:{}:remote_storage_demo", user_id_a),
             None,
         )
         .await?;

@@ -12,19 +12,19 @@ async fn update_remaining_quota(
     requester_uid: &str,
     size: i64,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-    let remaining_quota_key = format!("remote_storage:remaining_quota:{}", requester_uid);
+    let remaining_quota_key = format!("_remote_storage:remaining_quota:{}", requester_uid);
     let lock = cl.lock(&remaining_quota_key).await?;
     let mut remaining_quota = match cl.read_entry(&remaining_quota_key).await {
         Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
         Err(_) => {
             match cl
-                .read_entry("remote_storage:default_remaining_quota")
+                .read_entry("_remote_storage:default_remaining_quota")
                 .await
             {
                 Ok(data) => i64::from_le_bytes(<[u8; 8]>::try_from(data).unwrap()),
                 Err(_) => {
                     cl.create_entry(
-                        "remote_storage:default_remaining_quota",
+                        "_remote_storage:default_remaining_quota",
                         &4194304_i64.to_le_bytes(),
                     )
                     .await?;
@@ -75,7 +75,7 @@ impl ProtocolEntry for CreateProvider {
         .await?;
         cl.create_entry(
             &format!(
-                "remote_storage:{}:{}:{}",
+                "_remote_storage:{}:{}:{}",
                 if params.is_public {
                     "public"
                 } else {
@@ -102,7 +102,7 @@ impl ProtocolEntry for ReadRequester {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let provider_uid = &participants[1].user_id;
         let key = format!(
-            "remote_storage:private:{}:variable_transfer:{}:output",
+            "_remote_storage:private:{}:variable_transfer:{}:output",
             provider_uid,
             cl.get_task_id()?
         );
@@ -135,7 +135,7 @@ impl ProtocolEntry for ReadProvider {
         }
         let payload = cl
             .read_entry(&format!(
-                "remote_storage:{}:{}:{}",
+                "_remote_storage:{}:{}:{}",
                 if params.is_public {
                     "public"
                 } else {
@@ -201,7 +201,7 @@ impl ProtocolEntry for UpdateProvider {
         .await?;
         cl.update_entry(
             &format!(
-                "remote_storage:{}:{}:{}",
+                "_remote_storage:{}:{}:{}",
                 if params.is_public {
                     "public"
                 } else {
@@ -242,7 +242,7 @@ impl ProtocolEntry for DeleteProvider {
         let params: UpdateParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
         cl.delete_entry(&format!(
-            "remote_storage:{}:{}:{}",
+            "_remote_storage:{}:{}:{}",
             if params.is_public {
                 "public"
             } else {
