@@ -1,5 +1,4 @@
-use colink_sdk_a::{CoLink, Participant};
-use colink_sdk_p::ProtocolEntry;
+use colink_sdk::{CoLink, Participant, ProtocolEntry};
 use prost::Message;
 use remote_storage_proto::*;
 
@@ -44,7 +43,7 @@ async fn update_remaining_quota(
 }
 
 struct CreateRequester;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for CreateRequester {
     async fn start(
         &self,
@@ -57,7 +56,7 @@ impl ProtocolEntry for CreateRequester {
 }
 
 struct CreateProvider;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for CreateProvider {
     async fn start(
         &self,
@@ -92,7 +91,7 @@ impl ProtocolEntry for CreateProvider {
 }
 
 struct ReadRequester;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for ReadRequester {
     async fn start(
         &self,
@@ -117,7 +116,7 @@ impl ProtocolEntry for ReadRequester {
 }
 
 struct ReadProvider;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for ReadProvider {
     async fn start(
         &self,
@@ -170,7 +169,7 @@ impl ProtocolEntry for ReadProvider {
 }
 
 struct UpdateRequester;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UpdateRequester {
     async fn start(
         &self,
@@ -183,7 +182,7 @@ impl ProtocolEntry for UpdateRequester {
 }
 
 struct UpdateProvider;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for UpdateProvider {
     async fn start(
         &self,
@@ -218,7 +217,7 @@ impl ProtocolEntry for UpdateProvider {
 }
 
 struct DeleteRequester;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for DeleteRequester {
     async fn start(
         &self,
@@ -231,7 +230,7 @@ impl ProtocolEntry for DeleteRequester {
 }
 
 struct DeleteProvider;
-#[colink_sdk_p::async_trait]
+#[colink_sdk::async_trait]
 impl ProtocolEntry for DeleteProvider {
     async fn start(
         &self,
@@ -256,7 +255,7 @@ impl ProtocolEntry for DeleteProvider {
     }
 }
 
-colink_sdk_p::protocol_start!(
+colink_sdk::protocol_start!(
     ("remote_storage.create:requester", CreateRequester),
     ("remote_storage.create:provider", CreateProvider),
     ("remote_storage.read:requester", ReadRequester),

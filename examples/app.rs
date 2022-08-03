@@ -1,4 +1,4 @@
-use colink_sdk_a::{decode_jwt_without_validation, CoLink, Participant, SubscriptionMessage};
+use colink_sdk::{decode_jwt_without_validation, CoLink, Participant, SubscriptionMessage};
 use prost::Message;
 use remote_storage_proto::*;
 use std::env;

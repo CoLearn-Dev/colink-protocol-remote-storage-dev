@@ -422,8 +422,7 @@ dependencies = [
 name = "colink-protocol-remote-storage"
 version = "0.1.0"
 dependencies = [
- "colink-sdk-a",
- "colink-sdk-p",
+ "colink-sdk",
  "prost",
  "prost-build",
  "regex",
@@ -433,41 +432,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "colink-sdk-a"
-version = "0.1.9"
-source = "git+ssh://git@github.com/CoLearn-Dev/colink-sdk-a-rust-dev.git?tag=v0.1.9#192da2bab7ef1c9a54867dd958516ab155a7620b"
+name = "colink-sdk"
+version = "0.1.10"
+source = "git+ssh://git@github.com/CoLearn-Dev/colink-sdk-rust-dev.git?tag=v0.1.10#4eb3e048ceb3b7f3e74571c35293e8383605fdfd"
 dependencies = [
+ "async-trait",
  "base64",
  "chrono",
+ "ctrlc",
  "futures-lite",
  "lapin",
  "openssl",
  "prost",
+ "prost-build",
  "rand 0.8.5",
  "secp256k1",
  "serde",
  "serde_json",
+ "structopt",
  "tokio",
  "tonic",
  "tonic-build",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "colink-sdk-p"
-version = "0.1.9"
-source = "git+ssh://git@github.com/CoLearn-Dev/colink-sdk-p-rust-dev.git?tag=v0.1.9#0f9232b903593763d48a419d453cb05bf635aa70"
-dependencies = [
- "async-trait",
- "colink-sdk-a",
- "ctrlc",
- "futures-lite",
- "lapin",
- "prost",
- "serde",
- "structopt",
- "tokio",
  "tracing",
  "tracing-subscriber",
 ]
