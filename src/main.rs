@@ -1,9 +1,9 @@
+use colink_remote_storage_proto::*;
 use colink_sdk::{CoLink, Participant, ProtocolEntry};
 use prost::Message;
-use remote_storage_proto::*;
 
-mod remote_storage_proto {
-    include!(concat!(env!("OUT_DIR"), "/remote_storage.rs"));
+mod colink_remote_storage_proto {
+    include!(concat!(env!("OUT_DIR"), "/colink_remote_storage.rs"));
 }
 
 async fn update_remaining_quota(

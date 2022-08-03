@@ -1,10 +1,10 @@
+use colink_remote_storage_proto::*;
 use colink_sdk::{decode_jwt_without_validation, CoLink, Participant, SubscriptionMessage};
 use prost::Message;
-use remote_storage_proto::*;
 use std::env;
 
-mod remote_storage_proto {
-    include!(concat!(env!("OUT_DIR"), "/remote_storage.rs"));
+mod colink_remote_storage_proto {
+    include!(concat!(env!("OUT_DIR"), "/colink_remote_storage.rs"));
 }
 
 #[tokio::main]
