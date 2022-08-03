@@ -105,12 +105,9 @@ impl ProtocolEntry for ReadRequester {
             provider_uid,
             cl.get_task_id()?
         );
-        cl.read_or_wait(&key).await?;
-        cl.create_entry(
-            &format!("tasks:{}:output", cl.get_task_id()?),
-            key.as_bytes(),
-        )
-        .await?;
+        let data = cl.read_or_wait(&key).await?;
+        cl.create_entry(&format!("tasks:{}:output", cl.get_task_id()?), &data)
+            .await?;
         Ok(())
     }
 }

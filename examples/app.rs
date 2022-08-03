@@ -61,8 +61,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     let data = cl
         .read_or_wait(&format!("tasks:{}:output", task_id))
         .await?;
-    let path = String::from_utf8_lossy(&data);
-    let data = cl.read_or_wait(&path).await?;
     println!("{}", String::from_utf8_lossy(&data));
 
     // update
