@@ -137,7 +137,7 @@ impl ProtocolEntry for ReadProvider {
                 } else {
                     "private"
                 },
-                requester_uid,
+                params.holder_id,
                 params.remote_key_name
             ))
             .await?;
