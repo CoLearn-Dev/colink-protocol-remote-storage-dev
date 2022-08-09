@@ -101,13 +101,26 @@ impl ProtocolEntry for ReadRequester {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
         let provider_uid = &participants[1].user_id;
         let key = format!(
-            "_remote_storage:private:{}:_variable_transfer:{}:output",
+            "_remote_storage:private:{}:_variable_transfer:{}:status",
             provider_uid,
             cl.get_task_id()?
         );
-        let data = cl.read_or_wait(&key).await?;
-        cl.create_entry(&format!("tasks:{}:output", cl.get_task_id()?), &data)
-            .await?;
+        let status = cl.read_or_wait(&key).await?;
+        if status[0] == 0 {
+            let key = format!(
+                "_remote_storage:private:{}:_variable_transfer:{}:output",
+                provider_uid,
+                cl.get_task_id()?
+            );
+            let data = cl.read_or_wait(&key).await?;
+            cl.create_entry(&format!("tasks:{}:output", cl.get_task_id()?), &data)
+                .await?;
+            cl.create_entry(&format!("tasks:{}:status", cl.get_task_id()?), &[0])
+                .await?;
+        } else {
+            cl.create_entry(&format!("tasks:{}:status", cl.get_task_id()?), &[1])
+                .await?;
+        }
         Ok(())
     }
 }
@@ -121,27 +134,7 @@ impl ProtocolEntry for ReadProvider {
         param: Vec<u8>,
         participants: Vec<Participant>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-        let mut params: ReadParams = prost::Message::decode(&*param)?;
         let requester_uid = &participants[0].user_id;
-        if params.holder_id == String::default() {
-            params.holder_id = requester_uid.clone();
-        };
-        if !params.is_public && params.holder_id != *requester_uid {
-            Err("Permission denied.")?;
-        }
-        let payload = cl
-            .read_entry(&format!(
-                "_remote_storage:{}:{}:{}",
-                if params.is_public {
-                    "public"
-                } else {
-                    "private"
-                },
-                params.holder_id,
-                params.remote_key_name
-            ))
-            .await?;
-
         let participants = vec![
             Participant {
                 user_id: cl.get_user_id()?,
@@ -152,6 +145,39 @@ impl ProtocolEntry for ReadProvider {
                 role: "provider".to_string(),
             },
         ];
+
+        let payload = match async {
+            let mut params: ReadParams = prost::Message::decode(&*param)?;
+            if params.holder_id == String::default() {
+                params.holder_id = requester_uid.clone();
+            };
+            if !params.is_public && params.holder_id != *requester_uid {
+                Err("Permission denied.")?;
+            }
+            let payload = cl
+                .read_entry(&format!(
+                    "_remote_storage:{}:{}:{}",
+                    if params.is_public {
+                        "public"
+                    } else {
+                        "private"
+                    },
+                    params.holder_id,
+                    params.remote_key_name
+                ))
+                .await?;
+            Ok::<Vec<u8>, Box<dyn std::error::Error + Send + Sync + 'static>>(payload)
+        }
+        .await
+        {
+            Ok(payload) => payload,
+            Err(e) => {
+                self.set_status(&cl, &participants, 1).await?;
+                Err(e)?
+            }
+        };
+
+        self.set_status(&cl, &participants, 0).await?;
         let params = CreateParams {
             remote_key_name: format!("_variable_transfer:{}:output", cl.get_task_id()?),
             payload,
@@ -160,6 +186,26 @@ impl ProtocolEntry for ReadProvider {
         let mut payload = vec![];
         params.encode(&mut payload).unwrap();
         cl.run_task("remote_storage.create", &payload, &participants, false)
+            .await?;
+        Ok(())
+    }
+}
+
+impl ReadProvider {
+    async fn set_status(
+        &self,
+        cl: &CoLink,
+        participants: &[Participant],
+        status_code: u8,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        let params = CreateParams {
+            remote_key_name: format!("_variable_transfer:{}:status", cl.get_task_id()?),
+            payload: vec![status_code],
+            ..Default::default()
+        };
+        let mut payload = vec![];
+        params.encode(&mut payload).unwrap();
+        cl.run_task("remote_storage.create", &payload, participants, false)
             .await?;
         Ok(())
     }
