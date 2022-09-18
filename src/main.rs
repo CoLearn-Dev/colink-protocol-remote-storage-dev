@@ -1,5 +1,5 @@
+use colink::{CoLink, Participant, ProtocolEntry};
 use colink_remote_storage_proto::*;
-use colink_sdk::{CoLink, Participant, ProtocolEntry};
 use prost::Message;
 
 mod colink_remote_storage_proto {
@@ -43,7 +43,7 @@ async fn update_remaining_quota(
 }
 
 struct CreateRequester;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for CreateRequester {
     async fn start(
         &self,
@@ -56,7 +56,7 @@ impl ProtocolEntry for CreateRequester {
 }
 
 struct CreateProvider;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for CreateProvider {
     async fn start(
         &self,
@@ -91,7 +91,7 @@ impl ProtocolEntry for CreateProvider {
 }
 
 struct ReadRequester;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for ReadRequester {
     async fn start(
         &self,
@@ -126,7 +126,7 @@ impl ProtocolEntry for ReadRequester {
 }
 
 struct ReadProvider;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for ReadProvider {
     async fn start(
         &self,
@@ -212,7 +212,7 @@ impl ReadProvider {
 }
 
 struct UpdateRequester;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for UpdateRequester {
     async fn start(
         &self,
@@ -225,7 +225,7 @@ impl ProtocolEntry for UpdateRequester {
 }
 
 struct UpdateProvider;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for UpdateProvider {
     async fn start(
         &self,
@@ -260,7 +260,7 @@ impl ProtocolEntry for UpdateProvider {
 }
 
 struct DeleteRequester;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for DeleteRequester {
     async fn start(
         &self,
@@ -273,7 +273,7 @@ impl ProtocolEntry for DeleteRequester {
 }
 
 struct DeleteProvider;
-#[colink_sdk::async_trait]
+#[colink::async_trait]
 impl ProtocolEntry for DeleteProvider {
     async fn start(
         &self,
@@ -298,7 +298,7 @@ impl ProtocolEntry for DeleteProvider {
     }
 }
 
-colink_sdk::protocol_start!(
+colink::protocol_start!(
     ("remote_storage.create:requester", CreateRequester),
     ("remote_storage.create:provider", CreateProvider),
     ("remote_storage.read:requester", ReadRequester),
