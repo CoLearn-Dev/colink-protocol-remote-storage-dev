@@ -1,0 +1,9 @@
+[package]
+name = "remote_storage"
+keywords = ["remote storage"]
+description = "remote storage"
+entrypoint = "cargo run"
+
+[remote_storage]
+name = "remote_storage"
+description = "remote storage"
