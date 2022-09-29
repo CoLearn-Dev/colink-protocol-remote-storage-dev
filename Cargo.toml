@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-colink = "0.1.15"
+colink = "0.1.16"
 prost = "0.10"
 tokio = "1.18"
 tracing = "0.1"

@@ -411,9 +411,9 @@ dependencies = [
 
 [[package]]
 name = "colink"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f95be44b8105c0d47e3917a952e855806a350bae6e6da34e6d27a2af4989a6ba"
+checksum = "0adf29ab457f9f7482f166f5ca697acb9be61027d0e4a3a1d42bf3f85eba15b6"
 dependencies = [
  "async-trait",
  "base64",
@@ -1096,6 +1096,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
+name = "openssl-src"
+version = "111.22.0+1.1.1q"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f31f0d509d1c1ae9cada2f9539ff8f37933831fd5098879e482aa687d659853"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "openssl-sys"
 version = "0.9.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1104,6 +1113,7 @@ dependencies = [
  "autocfg 1.1.0",
  "cc",
  "libc",
+ "openssl-src",
  "pkg-config",
  "vcpkg",
 ]
