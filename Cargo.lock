@@ -411,9 +411,9 @@ dependencies = [
 
 [[package]]
 name = "colink"
-version = "0.1.16"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0adf29ab457f9f7482f166f5ca697acb9be61027d0e4a3a1d42bf3f85eba15b6"
+checksum = "998f02041d7c7530092602f3b4ee1a2a34d499a5910c392ff8f640941e69195c"
 dependencies = [
  "async-trait",
  "base64",
