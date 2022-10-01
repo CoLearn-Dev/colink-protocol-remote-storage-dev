@@ -42,6 +42,19 @@ async fn update_remaining_quota(
     Ok(())
 }
 
+struct Init;
+#[colink::async_trait]
+impl ProtocolEntry for Init {
+    async fn start(
+        &self,
+        _cl: CoLink,
+        _param: Vec<u8>,
+        _participants: Vec<Participant>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+        Ok(())
+    }
+}
+
 struct CreateRequester;
 #[colink::async_trait]
 impl ProtocolEntry for CreateRequester {
@@ -299,6 +312,7 @@ impl ProtocolEntry for DeleteProvider {
 }
 
 colink::protocol_start!(
+    ("remote_storage:@init", Init),
     ("remote_storage.create:requester", CreateRequester),
     ("remote_storage.create:provider", CreateProvider),
     ("remote_storage.read:requester", ReadRequester),
