@@ -1,5 +1,6 @@
 [package]
 name = "remote_storage"
+version = "0.1.1"
 keywords = ["remote storage"]
 description = "remote storage"
 entrypoint = "cargo run"
