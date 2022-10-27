@@ -1,3 +1,4 @@
+#![allow(clippy::derive_partial_eq_without_eq)]
 use colink::{CoLink, Participant, ProtocolEntry};
 use colink_remote_storage_proto::*;
 use prost::Message;

@@ -1,10 +1,10 @@
 [package]
 name = "colink-protocol-remote-storage"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 [dependencies]
-colink = "0.1.18"
+colink = "0.2.0"
 prost = "0.10"
 tokio = "1.18"
 tracing = "0.1"
